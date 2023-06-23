@@ -1,72 +1,80 @@
-import flatpickr from 'flatpickr';
-import 'flatpickr/dist/flatpickr.min.css';
+import flatpickr from "flatpickr";
 
-const startTimerBtn = document.querySelector('button[data-start]');
-const timePicker = document.querySelector('#datetime-picker');
+import "flatpickr/dist/flatpickr.min.css";
+
+const startTimerBtn = document.querySelector("button[data-start]")
+startTimerBtn.disabled = true
+
+const timePicker = document.querySelector("#datetime-picker")
+
 const timerValue = {
-  days: document.querySelector('[data-days]'),
-  hours: document.querySelector('[data-hours]'),
-  minutes: document.querySelector('[data-minutes]'),
-  seconds: document.querySelector('[data-seconds]'),
-};
+    days: document.querySelector("[data-days]"),
+    hours: document.querySelector("[data-hours]"),
+    minutes: document.querySelector("[data-minutes]"),
+    seconds: document.querySelector("[data-seconds]")
+  }
 let timerId = null;
-
 const options = {
-  enableTime: true,
-  time_24hr: true,
-  defaultDate: new Date(),
-  minuteIncrement: 1,
-  onClose(selectedDates) {
-    console.log(selectedDates[0]);
-    window.alert("Please choose a date in the future");
-    startTimerBtn.disabled = selectedDates[0] < new Date();
-    startTimerBtn.removeEventListener('click', changeTimerValue);
-    startTimerBtn.addEventListener('click', () => {
-      changeTimerValue(selectedDates[0]);
-    });
-  },
-};
-
-flatpickr(timePicker, options);
-function changeTimerValue(selectedTime) {
-  startTimerBtn.disabled = true;
-  timePicker.disabled = true;
-  const startTime = selectedTime;
+    enableTime: true,
+    time_24hr: true,
+    defaultDate: new Date(),
+    minuteIncrement: 1,
+    onClose(selectedDates) {
+      console.log(selectedDates[0]);
+      if (selectedDates[0] < new Date()) {
+        startTimerBtn.disabled = true;
+        window.alert("Please choose a date in the future")
+      } else {
+        startTimerBtn.disabled = false
+        startTimerBtn.addEventListener("click", () => { changeTimerValue(selectedDates[0]) })
+      }
+    },
+  };
+  flatpickr(timePicker, options)
+  function changeTimerValue(selectedTime) {
+    const timer = {
+      start() {
+        startTimerBtn.disabled = true;
+        timePicker.disabled = true;
+        const startTime = selectedTime
+        timerId = setInterval(() => { 
+          const currentTime = Date.now()
+          const deltaTime = currentTime - startTime
+          const { days, hours, minutes, seconds } = convertMs(deltaTime)
+          console.log(`days = ${days}`)
+          timerValue.days.textContent = days;
+          timerValue.hours.textContent = hours;
+          timerValue.minutes.textContent = minutes;
+          timerValue.seconds.textContent = seconds;
+          console.log(deltaTime)
+          if (deltaTime >= 0) {
+            clearInterval(timerId)
+            console.log("I worked")
+          }
   
-  clearInterval(timerId);
-  timerId = setInterval(() => {
-    const currentTime = Date.now();
-    const deltaTime = currentTime - startTime;
-    const { days, hours, minutes, seconds } = convertMs(deltaTime);
-    
-    console.log(`days = ${days}`);
-    timerValue.days.textContent = days;
-    timerValue.hours.textContent = hours;
-    timerValue.minutes.textContent = minutes;
-    timerValue.seconds.textContent = seconds;
-    console.log(deltaTime);
-    
-    if (deltaTime >= 0) {
-      clearInterval(timerId);
-      console.log('I worked');
+        }, 1000)
+      }
     }
-  }, 1000);
-}
-
+    timer.start()
+};
 function pad(value) {
-  return String(value).padStart(2, '0');
-}
-
-function convertMs(ms) {
-  const second = 1000;
-  const minute = second * 60;
-  const hour = minute * 60;
-  const day = hour * 24;
+    return String(value).padStart(2, "0");
+  }
   
-  const days = pad(Math.abs(Math.floor(ms / day)));
-  const hours = pad(Math.abs(Math.floor((ms % day) / hour)));
-  const minutes = pad(Math.abs(Math.floor(((ms % day) % hour) / minute)));
-  const seconds = pad(Math.abs(Math.floor((((ms % day) % hour) % minute) / second)));
- 
-  return { days, hours, minutes, seconds };
-}
+  function convertMs(ms) {
+    const second = 1000;
+    const minute = second * 60;
+    const hour = minute * 60;
+    const day = hour * 24;
+
+    const days = pad(Math.floor(ms / day)*- 1);
+  
+    const hours = pad(Math.floor((ms % day) / hour) * -1);
+   
+    const minutes = pad(Math.floor(((ms % day) % hour) / minute)* -1);
+  
+    const seconds = pad(Math.floor((((ms % day) % hour) % minute) / second)* -1);
+  
+    return { days, hours, minutes, seconds };
+  }
+
