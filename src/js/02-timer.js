@@ -18,6 +18,7 @@ const options = {
   minuteIncrement: 1,
   onClose(selectedDates) {
     console.log(selectedDates[0]);
+    window.alert("Please choose a date in the future");
     startTimerBtn.disabled = selectedDates[0] < new Date();
     startTimerBtn.removeEventListener('click', changeTimerValue);
     startTimerBtn.addEventListener('click', () => {
@@ -27,25 +28,24 @@ const options = {
 };
 
 flatpickr(timePicker, options);
-
 function changeTimerValue(selectedTime) {
   startTimerBtn.disabled = true;
   timePicker.disabled = true;
   const startTime = selectedTime;
-
+  
   clearInterval(timerId);
   timerId = setInterval(() => {
     const currentTime = Date.now();
     const deltaTime = currentTime - startTime;
     const { days, hours, minutes, seconds } = convertMs(deltaTime);
-
+    
     console.log(`days = ${days}`);
     timerValue.days.textContent = days;
     timerValue.hours.textContent = hours;
     timerValue.minutes.textContent = minutes;
     timerValue.seconds.textContent = seconds;
     console.log(deltaTime);
-
+    
     if (deltaTime >= 0) {
       clearInterval(timerId);
       console.log('I worked');
@@ -62,11 +62,11 @@ function convertMs(ms) {
   const minute = second * 60;
   const hour = minute * 60;
   const day = hour * 24;
-
+  
   const days = pad(Math.abs(Math.floor(ms / day)));
   const hours = pad(Math.abs(Math.floor((ms % day) / hour)));
   const minutes = pad(Math.abs(Math.floor(((ms % day) % hour) / minute)));
   const seconds = pad(Math.abs(Math.floor((((ms % day) % hour) % minute) / second)));
-
+ 
   return { days, hours, minutes, seconds };
 }
